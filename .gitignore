@@ -1,0 +1,14 @@
+*.d
+*.o
+*.bin
+*.list
+*.elf
+*.so
+*.vcd
+.*.sw*
+/boot/firmware
+trace.txt
+tools/piprog/piprog
+tools/vcd/vcd
+tools/rduart/rduart
+tags
