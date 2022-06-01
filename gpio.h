@@ -23,11 +23,10 @@ typedef enum {
     GPIO_FUNC_ALT5 = 2,
 } gpio_func_t;
 
-#define GPIO_BASE 0xFE200000
-
-static volatile uint32_t* gpio_set = (uint32_t*) (GPIO_BASE + 0x1C);
-static volatile uint32_t* gpio_clr = (uint32_t*) (GPIO_BASE + 0x28);
-static volatile uint32_t* gpio_lev = (uint32_t*) (GPIO_BASE + 0x34);
+#define GPIO_BASE 0x200000
+static volatile uint32_t* gpio_set = (uint32_t*) (MMIO_BASE + GPIO_BASE + 0x1C);
+static volatile uint32_t* gpio_clr = (uint32_t*) (MMIO_BASE + GPIO_BASE + 0x28);
+static volatile uint32_t* gpio_lev = (uint32_t*) (MMIO_BASE + GPIO_BASE + 0x34);
 
 void gpio_set_func(unsigned pin, gpio_func_t fn);
 void gpio_set_output(unsigned pin);
