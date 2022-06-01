@@ -1,14 +1,19 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "sys.h"
 #include "bits.h"
 #include "gpio.h"
-#include "timer.h"
 
-static volatile uint32_t* gpio_fsel = (uint32_t*) (GPIO_BASE);
-static volatile uint32_t* gpio_pud_ctrl = (uint32_t*) (GPIO_BASE + 0xe4);
+#define GPIO_BASE 0x200000
 
-void gpio_set_func(unsigned pin, gpio_func_t fn) {
+static volatile uint32_t* gpio_fsel = (uint32_t*) (MMIO_BASE + GPIO_BASE);
+static volatile uint32_t* gpio_set = (uint32_t*) (MMIO_BASE + GPIO_BASE + 0x1C);
+static volatile uint32_t* gpio_clr = (uint32_t*) (MMIO_BASE + GPIO_BASE + 0x28);
+static volatile uint32_t* gpio_lev = (uint32_t*) (MMIO_BASE + GPIO_BASE + 0x34);
+static volatile uint32_t* gpio_pud_ctrl = (uint32_t*) (MMIO_BASE + GPIO_BASE + 0xe4);
+
+void gpio_set_func(unsigned pin, unsigned fn) {
     if (pin >= 32)
         return;
     unsigned off = (pin % 10) * 3;
@@ -16,7 +21,7 @@ void gpio_set_func(unsigned pin, gpio_func_t fn) {
 
     uint32_t v = mmio_ld(&gpio_fsel[idx]);
     v &= ~(0b111 << off);
-    v |= fn << off;
+    v |= funcs[fn] << off;
     mmio_st(&gpio_fsel[idx], v);
 }
 
@@ -60,31 +65,37 @@ enum {
     PUD_PULLUP = 0b10,
 };
 
-static void gpio_set_pud(unsigned pin, unsigned pud) {
-    if (pin >= 32)
-        return;
-    unsigned off = (pin % 16) * 2;
-    unsigned idx = (pin / 16);
-    uint32_t v = mmio_ld(&gpio_pud_ctrl[idx]);
-    v &= ~(0b11 << off);
-    v |= pud << off;
-    mmio_st(&gpio_pud_ctrl[idx], v);
+static inline void wait_cyc(unsigned n) {
+    while (n--) {
+        asm volatile ("nop");
+    }
+}
+
+static void gpio_apply_pud(unsigned pin) {
+    wait_cyc(200);
+    mmio_st(gpio_pudclk, 1 << pin);
+    wait_cyc(200);
+    mmio_st(gpio_pud, 0);
+    mmio_st(gpio_pudclk, 0);
 }
 
 void gpio_set_pullup(unsigned pin) {
     if (pin >= 32)
         return;
-    gpio_set_pud(pin, PUD_PULLUP);
+    mmio_st(gpio_pud, PUD_PULLUP);
+    gpio_apply_pud(pin);
 }
 
 void gpio_set_pulldown(unsigned pin) {
     if (pin >= 32)
         return;
-    gpio_set_pud(pin, PUD_PULLDOWN);
+    mmio_st(gpio_pud, PUD_PULLDOWN);
+    gpio_apply_pud(pin);
 }
 
 void gpio_pud_off(unsigned pin) {
     if (pin >= 32)
         return;
-    gpio_set_pud(pin, PUD_OFF);
+    mmio_st(gpio_pud, PUD_OFF);
+    gpio_apply_pud(pin);
 }

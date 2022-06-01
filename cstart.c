@@ -3,10 +3,10 @@
 void kernel_start();
 
 void cstart() {
-    extern int __bss_start__, __bss_end__;
+    extern int _kbss_start, _kbss_end;
 
-    int* bss = &__bss_start__;
-    int* bss_end = &__bss_end__;
+    int* bss = &_kbss_start;
+    int* bss_end = &_kbss_end;
 
     while (bss < bss_end) {
         *bss++ = 0;

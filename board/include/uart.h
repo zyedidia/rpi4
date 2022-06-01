@@ -3,8 +3,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "libc/tinyprintf.h"
-
 void uart_init(unsigned baud);
 bool uart_rx_empty();
 bool uart_can_tx();
