@@ -5,8 +5,8 @@
 #include "gpio.h"
 #include "timer.h"
 
-static volatile uint32_t* gpio_fsel = (uint32_t*) (GPIO_BASE);
-static volatile uint32_t* gpio_pud_ctrl = (uint32_t*) (GPIO_BASE + 0xe4);
+static volatile uint32_t* gpio_fsel = (uint32_t*) (MMIO_BASE + GPIO_BASE);
+static volatile uint32_t* gpio_pud_ctrl = (uint32_t*) (MMIO_BASE + GPIO_BASE + 0xe4);
 
 void gpio_set_func(unsigned pin, gpio_func_t fn) {
     if (pin >= 32)

@@ -163,6 +163,8 @@ func main() {
 		log.Fatal("bootloader error code:", result)
 	}
 
+	fmt.Println("success")
+
 	buf := make([]byte, 1024)
 	for {
 		n, err := port.Read(buf)
